@@ -22,8 +22,8 @@ class ParemeterDefinition {
 }
 
 class FunctionDefinition {
-  public name = '';
   public parameterList: Array<ParemeterDefinition> = [];
+  constructor(public name: string = '') {}
 }
 
 export default class Parser {
@@ -83,45 +83,55 @@ export default class Parser {
     return foundType;
   }
   expectFunctionDefinition(): boolean {
-    const possibleType = this.expectType();
     const startTokenIdx = this.currentTokenIdx;
-    if (possibleType) {
-      const possibleName = this.expectIdentifier();
-      if (possibleName) {
-        const possibleOperator = this.expectOperator('(');
-        if (possibleOperator) {
-          const func = new FunctionDefinition();
-          func.name = possibleName.text;
-          while (!this.expectOperator(')')) {
-            const possbileParamType = this.expectType();
-            const possibleVariableName = this.expectIdentifier();
-            if (!possbileParamType) {
-              throw new SyntaxError(
-                'Expected Type after function declartation'
-              );
-            }
-            func.parameterList.push(
-              new ParemeterDefinition({
-                name: possibleVariableName?.text || '',
-                type: possbileParamType,
-              })
-            );
-
-            if (this.expectOperator(')')) {
-              break;
-            }
-
-            if (!this.expectOperator(',')) {
-              new SyntaxError('Expected , after argument');
-            }
-          }
-          return true;
-        }
-        this.currentTokenIdx = startTokenIdx;
-      } else {
-        this.currentTokenIdx = startTokenIdx;
-      }
+    const possibleType = this.expectType();
+    const possibleName = this.expectIdentifier();
+    const possibleOperator = this.expectOperator('(');
+    if (possibleType && possibleName && possibleOperator) {
+      const func = new FunctionDefinition(possibleName.text);
+      console.log(func);
+    } else {
+      this.currentTokenIdx = startTokenIdx;
     }
+    // if (possibleType) {
+    //   const possibleName = this.expectIdentifier();
+    //   if (possibleName) {
+    //     const possibleOperator = this.expectOperator('(');
+    //     if (possibleOperator) {
+    //       const func = new FunctionDefinition();
+    //       func.name = possibleName.text;
+    //       while (!this.expectOperator(')')) {
+    //         const possbileParamType = this.expectType();
+    //         const possibleVariableName = this.expectIdentifier();
+
+    //         if (!possbileParamType) {
+    //           throw new SyntaxError(
+    //             'Expected Type after function declartation'
+    //           );
+    //         }
+
+    //         func.parameterList.push(
+    //           new ParemeterDefinition({
+    //             name: possibleVariableName?.text || '',
+    //             type: possbileParamType,
+    //           })
+    //         );
+
+    //         if (this.expectOperator(')')) {
+    //           break;
+    //         }
+
+    //         if (!this.expectOperator(',')) {
+    //           new SyntaxError('Expected , after argument');
+    //         }
+    //       }
+    //       return true;
+    //     }
+    //     this.currentTokenIdx = startTokenIdx;
+    //   } else {
+    //     this.currentTokenIdx = startTokenIdx;
+    //   }
+    // }
     return false;
   }
 }
