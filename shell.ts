@@ -7,9 +7,9 @@ async function main() {
 
   let tokens = new Tokenizer().parse(`
       // hello world
-      void main (int argc, char argv) {
+      // apeh
+      void main (void) {
         double foo = 1.5 / 2;
-        // apeh
         printf("Hello it has been %d years since I learned C \n", 2020)
       }
     `);
