@@ -12,6 +12,15 @@ async function main() {
         // apeh
         printf("Hello it has been %d years since I learned C  \n", 2020)
       }
+      void main (int argc, char argv) {
+        double foo = 1.5 / 2;
+        // apeh
+        printf("Hello it has been %d years since I learned C  \n", 2020)
+      }
+
+
+
+      3 + 3
     `);
   let parsed = new Parser().parse(tokens);
   console.log(parsed);

@@ -1,29 +1,5 @@
-export enum TOKEN_TYPE {
-  WHITESPACE,
-  IDENTFIER,
-  INTEGER,
-  FLOAT,
-  STRING,
-  OPERATOR,
-  POTETNTIAL_COMMENT,
-  COMMENT,
-}
-
-class UncaughtError {
-  constructor(char: string) {
-    throw new Error(
-      `Uncaught SyntaxError: Invalid or unexpected token ${char}`
-    );
-  }
-}
-
-export class Token {
-  public type: TOKEN_TYPE = TOKEN_TYPE.WHITESPACE;
-  public text = '';
-  public pos = 1;
-  public line = 17;
-}
-
+import { UncaughtError } from './errors.ts';
+import { Token, TOKEN_TYPE } from './Token.ts';
 export default class Tokenizer {
   public parse(text: string) {
     const tokens: Array<Token> = [];
@@ -57,7 +33,7 @@ export default class Tokenizer {
             }
             currentToken.text += currChar;
           } else {
-            new UncaughtError(currChar);
+            new UncaughtError(currentToken);
           }
           break;
         case 'a':
@@ -144,17 +120,20 @@ export default class Tokenizer {
             currentToken = new Token();
           }
           break;
+        case '\r':
         case '\n':
+          if (currentToken.type == TOKEN_TYPE.COMMENT) {
+            currentToken = new Token();
+          }
           if (currentToken.type == TOKEN_TYPE.STRING) {
             currentToken.text += currChar;
-          } else if (currentToken.type != TOKEN_TYPE.WHITESPACE) {
-            if (currentToken.type != TOKEN_TYPE.COMMENT) {
-              tokens.push(currentToken);
-            }
-            currentToken = new Token();
-            line++;
-            pos = 1;
           }
+          if (currentToken.type != TOKEN_TYPE.WHITESPACE) {
+            tokens.push(currentToken);
+          }
+          currentToken = new Token();
+          line++;
+          pos = 1;
           break;
         case '"':
           if (currentToken.type == TOKEN_TYPE.WHITESPACE) {
@@ -165,7 +144,7 @@ export default class Tokenizer {
           }
           break;
         default:
-          new UncaughtError(currChar);
+          new UncaughtError(currentToken);
       }
       currentToken.pos = pos;
       currentToken.line = line;

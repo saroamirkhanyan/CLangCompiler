@@ -1,4 +1,4 @@
-import { Token, TOKEN_TYPE } from './Tokenizer.ts';
+import { Token, TOKEN_TYPE } from './Token.ts';
 import { Nullable } from './helpers/helpers.ts';
 import { SyntaxError } from './errors.ts';
 
