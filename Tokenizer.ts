@@ -5,6 +5,7 @@ export enum TOKEN_TYPE {
   FLOAT,
   STRING,
   OPERATOR,
+  POTETNTIAL_COMMENT,
   COMMENT,
 }
 
@@ -19,6 +20,8 @@ class UncaughtError {
 export class Token {
   public type: TOKEN_TYPE = TOKEN_TYPE.WHITESPACE;
   public text = '';
+  public pos = 1;
+  public line = 1;
 }
 
 export default class Tokenizer {
@@ -85,6 +88,7 @@ export default class Tokenizer {
         case 'y':
         case 'z':
           if (currentToken.type == TOKEN_TYPE.WHITESPACE) {
+            currentToken = new Token();
             currentToken.type = TOKEN_TYPE.IDENTFIER;
           }
           if (
@@ -92,6 +96,14 @@ export default class Tokenizer {
             currentToken.type == TOKEN_TYPE.STRING
           ) {
             currentToken.text += currChar;
+          }
+          break;
+        case '/':
+          if (currentToken.type == TOKEN_TYPE.WHITESPACE) {
+            currentToken.type = TOKEN_TYPE.OPERATOR;
+            currentToken.text = currChar;
+          } else if (currentToken.type == TOKEN_TYPE.OPERATOR) {
+            currentToken.type = TOKEN_TYPE.COMMENT;
           }
           break;
         case '{':
@@ -102,19 +114,13 @@ export default class Tokenizer {
         case '+':
         case ';':
         case ',':
-        case '/':
         case '=':
         case '%':
-          if (
-            currentToken.type == TOKEN_TYPE.STRING ||
-            currentToken.type == TOKEN_TYPE.COMMENT
-          ) {
+          if (currentToken.type == TOKEN_TYPE.STRING) {
             currentToken.text += currChar;
-          } else {
-            if (currentToken.type != TOKEN_TYPE.WHITESPACE) {
-              tokens.push(currentToken);
-              currentToken = new Token();
-            }
+          } else if (currentToken.type != TOKEN_TYPE.WHITESPACE) {
+            tokens.push(currentToken);
+            currentToken = new Token();
             currentToken.type = TOKEN_TYPE.OPERATOR;
             currentToken.text = currChar;
             tokens.push(currentToken);
@@ -149,13 +155,6 @@ export default class Tokenizer {
             tokens.push(currentToken);
             currentToken = new Token();
           }
-          break;
-        case '#':
-          if (currentToken.type != TOKEN_TYPE.WHITESPACE) {
-            tokens.push(currentToken);
-          }
-          currentToken = new Token();
-          currentToken.type = TOKEN_TYPE.COMMENT;
           break;
         default:
           new UncaughtError(currChar);

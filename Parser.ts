@@ -13,8 +13,12 @@ class Type {
 }
 
 class ParemeterDefinition {
-  public name = '';
-  public type = new Type();
+  public name;
+  public type;
+  constructor({ name = '', type }: { name: string; type: Type }) {
+    this.name = name;
+    this.type = type;
+  }
 }
 
 class FunctionDefinition {
@@ -38,6 +42,7 @@ export default class Parser {
   ];
   public parse(tokens: Array<Token>) {
     this.tokens = tokens;
+    console.log(this.tokens);
     while (this.currentTokenIdx != tokens.length) {
       if (this.expectFunctionDefinition()) {
       }
@@ -90,13 +95,25 @@ export default class Parser {
             console.log(this.currentToken);
             const possbileParamType = this.expectType();
             const possibleVariableName = this.expectIdentifier();
-            const funcParemeter = new ParemeterDefinition();
-            if (possbileParamType && possibleVariableName) {
-              funcParemeter.name = possibleVariableName.text;
-              funcParemeter.type = possbileParamType;
-              func.parameterList.push(funcParemeter);
+            if (!possbileParamType) {
+              throw new SyntaxError(
+                'Expected Type after function declartation'
+              );
             }
-            this.expectOperator(',');
+            func.parameterList.push(
+              new ParemeterDefinition({
+                name: possibleVariableName?.text || '',
+                type: possbileParamType,
+              })
+            );
+
+            if (this.expectOperator(')')) {
+              break;
+            }
+
+            if (!this.expectOperator(',')) {
+              new SyntaxError('Expected , after argument');
+            }
           }
           return true;
         }
