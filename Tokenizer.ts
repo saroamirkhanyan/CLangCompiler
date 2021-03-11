@@ -130,6 +130,8 @@ export default class Tokenizer {
           } else if (currentToken.type != TOKEN_TYPE.WHITESPACE) {
             tokens.push(currentToken);
             currentToken = new Token();
+          }
+          if (currentToken.type != TOKEN_TYPE.STRING) {
             line++;
             pos = 1;
           }

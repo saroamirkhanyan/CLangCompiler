@@ -60,6 +60,7 @@ export default class Parser {
     this.currentTokenIdx++;
     return returnToken;
   }
+
   expectOperator(name = ''): Nullable<Token> {
     if (
       this.currentToken == this.lastToken ||
@@ -92,7 +93,6 @@ export default class Parser {
           const func = new FunctionDefinition();
           func.name = possibleName.text;
           while (!this.expectOperator(')')) {
-            console.log(this.currentToken);
             const possbileParamType = this.expectType();
             const possibleVariableName = this.expectIdentifier();
             if (!possbileParamType) {
