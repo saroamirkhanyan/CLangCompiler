@@ -127,13 +127,12 @@ export default class Tokenizer {
           }
           if (currentToken.type == TOKEN_TYPE.STRING) {
             currentToken.text += currChar;
-          }
-          if (currentToken.type != TOKEN_TYPE.WHITESPACE) {
+          } else if (currentToken.type != TOKEN_TYPE.WHITESPACE) {
             tokens.push(currentToken);
+            currentToken = new Token();
+            line++;
+            pos = 1;
           }
-          currentToken = new Token();
-          line++;
-          pos = 1;
           break;
         case '"':
           if (currentToken.type == TOKEN_TYPE.WHITESPACE) {
