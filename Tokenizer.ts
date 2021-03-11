@@ -21,13 +21,15 @@ export class Token {
   public type: TOKEN_TYPE = TOKEN_TYPE.WHITESPACE;
   public text = '';
   public pos = 1;
-  public line = 1;
+  public line = 17;
 }
 
 export default class Tokenizer {
   public parse(text: string) {
     const tokens: Array<Token> = [];
     let currentToken = new Token();
+    let pos = 1;
+    let line = 1;
     for (const currChar of text) {
       switch (currChar) {
         case '0':
@@ -118,11 +120,15 @@ export default class Tokenizer {
         case '%':
           if (currentToken.type == TOKEN_TYPE.STRING) {
             currentToken.text += currChar;
-          } else if (currentToken.type != TOKEN_TYPE.WHITESPACE) {
-            tokens.push(currentToken);
+          } else {
+            if (currentToken.type != TOKEN_TYPE.WHITESPACE) {
+              tokens.push(currentToken);
+            }
             currentToken = new Token();
             currentToken.type = TOKEN_TYPE.OPERATOR;
             currentToken.text = currChar;
+            currentToken.line = line;
+            currentToken.pos = pos;
             tokens.push(currentToken);
             currentToken = new Token();
           }
@@ -146,6 +152,8 @@ export default class Tokenizer {
               tokens.push(currentToken);
             }
             currentToken = new Token();
+            line++;
+            pos = 1;
           }
           break;
         case '"':
@@ -159,6 +167,9 @@ export default class Tokenizer {
         default:
           new UncaughtError(currChar);
       }
+      currentToken.pos = pos;
+      currentToken.line = line;
+      pos++;
     }
     if (
       currentToken.type != TOKEN_TYPE.WHITESPACE &&
