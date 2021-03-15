@@ -1,16 +1,8 @@
 import { Token, TOKEN_TYPE } from './Token.ts';
 import { Nullable } from './helpers/helpers.ts';
 import { SyntaxError } from './errors.ts';
-
-enum TYPES {
-  VOID,
-  INTEGER,
-  CHAR,
-}
-
-class Type {
-  constructor(public name = '', public type: TYPES = TYPES.VOID) {}
-}
+import { Statements, Statement } from './Statements.ts';
+import { Type, TYPES } from './Types.ts';
 
 class ParemeterDefinition {
   public name;
@@ -23,12 +15,14 @@ class ParemeterDefinition {
 
 class FunctionDefinition {
   public parameterList: Array<ParemeterDefinition> = [];
+  public statments: Array<Statement> = [];
   constructor(public name: string = '') {}
 }
 
 export default class Parser {
   private currentTokenIdx = 0;
   private tokens: Array<Token> = [];
+  private functions: Array<FunctionDefinition> = [];
   private get currentToken() {
     return this.tokens[this.currentTokenIdx];
   }
@@ -39,14 +33,19 @@ export default class Parser {
     new Type('int', TYPES.INTEGER),
     new Type('void', TYPES.VOID),
     new Type('char', TYPES.CHAR),
+    new Type('float', TYPES.FLOAT),
   ];
+
   public parse(tokens: Array<Token>) {
     this.tokens = tokens;
 
     while (this.currentTokenIdx != tokens.length) {
       if (this.expectFunctionDefinition()) {
+      } else {
+        break;
       }
     }
+    console.log(this.functions);
   }
 
   expectIdentifier(name = ''): Nullable<Token> {
@@ -73,6 +72,7 @@ export default class Parser {
     this.currentTokenIdx++;
     return returnToken;
   }
+
   expectType(): Nullable<Type> {
     const possibleType = this.expectIdentifier();
     if (!possibleType) return null;
@@ -82,6 +82,7 @@ export default class Parser {
     }
     return foundType;
   }
+
   expectFunctionDefinition(): boolean {
     const startTokenIdx = this.currentTokenIdx;
     const possibleType = this.expectType();
@@ -107,10 +108,72 @@ export default class Parser {
           new SyntaxError('Expected , after argument');
         }
       }
-      // this.parseFunctionBody(func);
+      const statements: Nullable<Statement[]> = this.parseFunctionBody();
+      this.parseFunctionBody();
+      if (!statements) {
+        this.currentTokenIdx = startTokenIdx;
+        return false;
+      }
+      func.statments = statements;
+      this.functions.push(func);
       return true;
     }
     this.currentTokenIdx = startTokenIdx;
     return false;
   }
+
+  parseFunctionBody() {
+    if (!this.expectOperator('{')) {
+      return null;
+    }
+    const statements: Array<Statement> = [];
+    while (!this.expectOperator('}')) {
+      const statement = this.expectOneStatement();
+      if (statement) {
+        statements.push(statement);
+      }
+
+      // if (!this.expectOperator(';')) {
+      //   throw new SyntaxError("Expected ';' at end of statement.");
+      // }
+      break;
+    }
+    return statements;
+  }
+
+  expectOneStatement() {
+    if (this.currentToken.type == TOKEN_TYPE.FLOAT) {
+      let name = this.currentToken.text;
+      this.currentTokenIdx++;
+      return new Statements.ValueStatment({
+        name,
+        type: new Type('float', TYPES.FLOAT),
+      });
+    }
+    const possibleVariableDeclaration = this.expectVariableDeclaration();
+    if (possibleVariableDeclaration) return possibleVariableDeclaration;
+
+    const possibleFunctionCall = this.expectFunctionCall();
+  }
+
+  expectVariableDeclaration() {
+    const possibleType = this.expectType();
+    const possibleVariableName = this.expectIdentifier();
+    if (!possibleType || !possibleVariableName) {
+      return null;
+    }
+    if (this.expectOperator('=')) {
+      let initialValue = this.expectOneStatement();
+
+      if (!initialValue) {
+        throw new SyntaxError('Expected initial value after =');
+      }
+    }
+    return new Statements.VariableDeclaration({
+      type: possibleType,
+      name: possibleVariableName.text,
+    });
+  }
+
+  expectFunctionCall() {}
 }

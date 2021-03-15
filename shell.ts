@@ -9,7 +9,7 @@ async function main() {
       // hello world
       // apeh
       void main (void) {
-        double foo = 1.5 / 2;
+        float foo = 1.5;
         printf("Hello it has been %d years since I learned C \n", 2020)
       }
     `);
